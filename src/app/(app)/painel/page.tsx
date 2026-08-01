@@ -1,7 +1,7 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
 import { Calendar, FileText, Layers, DollarSign } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { PageHeader } from '@/components/ui/page-header'
 import { LogoutButton } from '@/components/auth/logout-button'
 import { Card } from '@/components/ui/card'
@@ -23,27 +23,16 @@ interface AppointmentRow extends Record<string, unknown> {
 
 export default async function PainelPage() {
   const supabase = createClient()
+  const { user, perfil, empresaId } = await getAuthenticatedUser()
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  if (!user || !empresaId) redirect('/login')
 
-  if (!session) redirect('/login')
-
-  // 1. Dados de perfil e empresa do usuário logado
-  const { data: perfil } = await supabase
-    .from('perfis')
-    .select('nome, empresa_id')
-    .eq('id', session.user.id)
+  // 1. Dados da empresa do usuário logado
+  const { data: empresa } = await supabase
+    .from('empresas')
+    .select('nome')
+    .eq('id', empresaId)
     .single()
-
-  const { data: empresa } = perfil?.empresa_id
-    ? await supabase
-        .from('empresas')
-        .select('nome')
-        .eq('id', perfil.empresa_id)
-        .single()
-    : { data: null }
 
   // 2. Data boundaries para consultas
   const now = new Date()

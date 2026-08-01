@@ -98,9 +98,6 @@ export function OrcamentoDrawer({ open, onClose, orcamentoInicial, onSalvo }: Or
   // Fetch base options
   useEffect(() => {
     async function loadData() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
       const { data: listClientes } = await supabase
         .from("clientes")
         .select("id, nome")

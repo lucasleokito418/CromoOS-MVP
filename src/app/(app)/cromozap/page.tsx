@@ -1,29 +1,16 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { CromozapCliente } from '@/components/cromozap/cromozap-cliente'
 
 export const revalidate = 0
 
 export default async function CromozapPage() {
+  const { user, perfil, empresaId } = await getAuthenticatedUser()
+
+  if (!user || !empresaId) redirect('/login')
+
   const supabase = createClient()
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session) redirect('/login')
-
-  // 1. Busca o perfil do operador para extrair o empresa_id
-  const { data: perfil } = await supabase
-    .from('perfis')
-    .select('id, empresa_id')
-    .eq('id', session.user.id)
-    .single()
-
-  if (!perfil || !perfil.empresa_id) redirect('/login')
-
-  const empresaId = perfil.empresa_id
 
   // 2. Busca conexão, automações e fila em paralelo
   const [conexaoRes, automacoesRes, filaRes] = await Promise.all([

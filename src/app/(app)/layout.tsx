@@ -19,7 +19,7 @@ import {
   ShieldCheck,
   Sparkles
 } from 'lucide-react'
-import { createClient } from '@/lib/supabase/server'
+import { getAuthenticatedUser } from '@/lib/supabase/server'
 import type { SidebarSection } from '@/components/layout/sidebar'
 import { AppShell } from '@/components/layout/app-shell'
 
@@ -28,20 +28,9 @@ export default async function AppLayout({
 }: {
   children: React.ReactNode
 }) {
-  const supabase = createClient()
+  const { user, perfil, empresaId } = await getAuthenticatedUser()
 
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session) redirect('/login')
-
-  // Busca o perfil do usuário logado
-  const { data: perfil } = await supabase
-    .from('perfis')
-    .select('nome, empresa_id')
-    .eq('id', session.user.id)
-    .single()
+  if (!user) redirect('/login')
 
   const navSections: SidebarSection[] = [
     {
@@ -174,12 +163,12 @@ export default async function AppLayout({
     },
   ]
 
-  const userDisplayName = perfil?.nome || session.user.email?.split('@')[0] || 'Usuário'
+  const userDisplayName = perfil?.nome || user.email?.split('@')[0] || 'Usuário'
 
   return (
     <AppShell
       userDisplayName={userDisplayName}
-      userEmail={session.user.email || ''}
+      userEmail={user.email || ''}
       empresaId={perfil?.empresa_id || null}
       navSections={navSections}
     >

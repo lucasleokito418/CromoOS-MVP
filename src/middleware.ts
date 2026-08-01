@@ -39,14 +39,14 @@ export async function middleware(request: NextRequest) {
   )
 
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const isPublic = PUBLIC_ROUTES.some((r) => pathname.startsWith(r))
   const isOnboarding = pathname.startsWith(ONBOARDING_ROUTE)
 
   // Sem sessão: só rotas públicas passam. Tudo mais (incluindo onboarding) vai pro login.
-  if (!session) {
+  if (!user) {
     if (isPublic) return response
     const url = request.nextUrl.clone()
     url.pathname = '/login'
@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
   const { data: perfil } = await supabase
     .from('perfis')
     .select('empresa_id')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single()
 
   const temEmpresa = Boolean(perfil?.empresa_id)

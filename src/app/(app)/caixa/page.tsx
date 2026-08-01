@@ -1,27 +1,16 @@
 import React from "react"
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, getAuthenticatedUser } from "@/lib/supabase/server"
 import { CaixaCliente } from "@/components/caixa/caixa-cliente"
 
 export const revalidate = 0
 
 export default async function CaixaPage() {
+  const { user, perfil, empresaId } = await getAuthenticatedUser()
+
+  if (!user || !perfil || !empresaId) redirect("/login")
+
   const supabase = createClient()
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session) redirect("/login")
-
-  // 1. Busca perfil id e empresa_id do operador
-  const { data: perfil } = await supabase
-    .from("perfis")
-    .select("id, empresa_id")
-    .eq("id", session.user.id)
-    .single()
-
-  if (!perfil) redirect("/login")
 
   // 2. Busca sessão ativa de caixa para a empresa
   const { data: sessaoAtiva } = await supabase

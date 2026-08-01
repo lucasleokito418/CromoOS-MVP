@@ -1,18 +1,15 @@
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { ClientesCliente } from '@/components/clientes/clientes-cliente'
 import type { Cliente } from '@/types/clientes'
 
 export const revalidate = 0
 
 export default async function ClientesPage() {
+  const { user } = await getAuthenticatedUser()
+  if (!user) redirect('/login')
+
   const supabase = createClient()
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session) redirect('/login')
 
   const { data, error } = await supabase
     .from('clientes')

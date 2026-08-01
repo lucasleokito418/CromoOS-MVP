@@ -236,11 +236,17 @@ export function ClienteDrawer({ open, onClose, clienteInicial, onSalvo }: Client
           // Sync Vehicles
           // Delete removed vehicles
           const keptVeiculoIds = values.veiculos.map(v => v.id).filter(Boolean)
-          const { error: errDelV } = await supabase
-            .from("veiculos")
-            .delete()
-            .eq("cliente_id", clientId)
-            .not("id", "in", `(${keptVeiculoIds.join(",") || "00000000-0000-0000-0000-000000000000"})`)
+          let errDelV: any = null
+          if (keptVeiculoIds.length === 0) {
+            // Remove todos os veículos do cliente
+            const { error } = await supabase.from("veiculos").delete().eq("cliente_id", clientId)
+            errDelV = error
+          } else {
+            // PostgREST exige UUIDs com aspas duplas dentro dos parênteses
+            const idsParam = `("${keptVeiculoIds.join('","')}")`
+            const { error } = await supabase.from("veiculos").delete().eq("cliente_id", clientId).not("id", "in", idsParam)
+            errDelV = error
+          }
           if (errDelV) throw errDelV
 
           // Insert / Update vehicles
@@ -263,11 +269,17 @@ export function ClienteDrawer({ open, onClose, clienteInicial, onSalvo }: Client
 
           // Sync Estofados
           const keptEstofadoIds = values.estofados.map(e => e.id).filter(Boolean)
-          const { error: errDelE } = await supabase
-            .from("estofados")
-            .delete()
-            .eq("cliente_id", clientId)
-            .not("id", "in", `(${keptEstofadoIds.join(",") || "00000000-0000-0000-0000-000000000000"})`)
+          let errDelE: any = null
+          if (keptEstofadoIds.length === 0) {
+            // Remove todos os estofados do cliente
+            const { error } = await supabase.from("estofados").delete().eq("cliente_id", clientId)
+            errDelE = error
+          } else {
+            // PostgREST exige UUIDs com aspas duplas dentro dos parênteses
+            const idsParamE = `("${keptEstofadoIds.join('","')}")`
+            const { error } = await supabase.from("estofados").delete().eq("cliente_id", clientId).not("id", "in", idsParamE)
+            errDelE = error
+          }
           if (errDelE) throw errDelE
 
           for (const est of values.estofados) {

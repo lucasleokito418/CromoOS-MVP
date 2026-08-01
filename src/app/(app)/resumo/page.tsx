@@ -1,18 +1,15 @@
 import React from "react"
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, getAuthenticatedUser } from "@/lib/supabase/server"
 import { ResumoCliente } from "@/components/financeiro/resumo-cliente"
 
 export const revalidate = 0
 
 export default async function ResumoPage() {
+  const { user } = await getAuthenticatedUser()
+  if (!user) redirect("/login")
+
   const supabase = createClient()
-
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
-
-  if (!session) redirect("/login")
 
   const hoje = new Date()
   const hojeStr = hoje.toISOString().slice(0, 10)

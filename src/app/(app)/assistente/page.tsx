@@ -1,21 +1,19 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
-import { createClient } from '@/lib/supabase/server'
+import { createClient, getAuthenticatedUser } from '@/lib/supabase/server'
 import { gerarBriefingDiario, BriefingDiario } from '@/lib/ia/briefing'
 import { AssistenteClient } from './AssistenteClient'
 
 export const revalidate = 0 // Evita cache para que o briefing esteja sempre atualizado
 
 export default async function AssistentePage() {
-  const supabase = createClient()
-  
-  const {
-    data: { session },
-  } = await supabase.auth.getSession()
+  const { user, perfil } = await getAuthenticatedUser()
 
-  if (!session) {
+  if (!user) {
     redirect('/login')
   }
+
+  const supabase = createClient()
 
   // Busca o briefing diário com queries diretas e rápidas
   let briefing: BriefingDiario = {
@@ -31,10 +29,12 @@ export default async function AssistentePage() {
     console.error('Erro ao gerar briefing diário:', err)
   }
 
+  const userDisplayName = perfil?.nome || user.email?.split('@')[0] || 'Usuário'
+
   return (
     <AssistenteClient
       initialBriefing={briefing}
-      userDisplayName={session.user.email?.split('@')[0] || 'Usuário'}
+      userDisplayName={userDisplayName}
     />
   )
 }

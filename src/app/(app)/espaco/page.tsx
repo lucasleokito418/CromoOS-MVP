@@ -1,13 +1,14 @@
 import { redirect } from "next/navigation"
-import { createClient } from "@/lib/supabase/server"
+import { createClient, getAuthenticatedUser } from "@/lib/supabase/server"
 import { EspacoCliente } from "@/components/espaco/espaco-cliente"
 
 export const revalidate = 0
 
 export default async function EspacoPage() {
+  const { user } = await getAuthenticatedUser()
+  if (!user) redirect("/login")
+
   const supabase = createClient()
-  const { data: { session } } = await supabase.auth.getSession()
-  if (!session) redirect("/login")
 
   const [vagasRes, clientesRes] = await Promise.all([
     supabase

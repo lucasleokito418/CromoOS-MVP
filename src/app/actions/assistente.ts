@@ -17,15 +17,15 @@ import { gerarBriefingDiario } from '@/lib/ia/briefing';
 export async function obterHistoricoMensagens() {
   const supabase = createClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) return [];
+  if (!user) return [];
 
   const { data, error } = await supabase
     .from('assistente_mensagens')
     .select('id, papel, conteudo, criado_em')
-    .eq('perfil_id', session.user.id)
+    .eq('perfil_id', user.id)
     .order('criado_em', { ascending: true })
     .limit(50);
 
@@ -40,10 +40,10 @@ export async function obterHistoricoMensagens() {
 export async function obterBriefing() {
   const supabase = createClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     throw new Error('Não autenticado');
   }
 
@@ -57,10 +57,10 @@ export async function enviarMensagemAssistente(texto: string) {
 
   const supabase = createClient();
   const {
-    data: { session },
-  } = await supabase.auth.getSession();
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  if (!session) {
+  if (!user) {
     return { error: 'Não autenticado' };
   }
 
@@ -68,7 +68,7 @@ export async function enviarMensagemAssistente(texto: string) {
   const { data: perfil, error: perfilError } = await supabase
     .from('perfis')
     .select('empresa_id')
-    .eq('id', session.user.id)
+    .eq('id', user.id)
     .single();
 
   if (perfilError || !perfil?.empresa_id) {
@@ -76,7 +76,7 @@ export async function enviarMensagemAssistente(texto: string) {
   }
 
   const empresaId = perfil.empresa_id;
-  const perfilId = session.user.id;
+  const perfilId = user.id;
 
   // 1. Salva a mensagem do usuário
   const { error: userInsertError } = await supabase

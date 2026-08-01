@@ -118,9 +118,6 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
   // Fetch base options
   useEffect(() => {
     async function loadData() {
-      const { data: { session } } = await supabase.auth.getSession()
-      if (!session) return
-
       // Load clients
       const { data: listClientes } = await supabase
         .from("clientes")
@@ -438,24 +435,14 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
       if (errPagamento) throw errPagamento
 
       // 6. Update agendamento status to 'confirmado'
+      // Nota: o trigger trg_pagamento_gera_movimentacao cuida de inserir
+      // em movimentacoes_financeiras automaticamente após o insert em pagamentos.
       const { error: errAgendamentoStatus } = await supabase
         .from("agendamentos")
         .update({ status: "confirmado" })
         .eq("id", agendamentoInicial.id)
 
       if (errAgendamentoStatus) throw errAgendamentoStatus
-
-      // 7. Add financial transaction record
-      await supabase.from("movimentacoes_financeiras").insert({
-        empresa_id: empresaId,
-        conta_id: contaId,
-        venda_id: novaVenda.id,
-        tipo: "entrada",
-        valor: totalLiquido,
-        status: "pago",
-        data: new Date().toISOString().slice(0, 10),
-        descricao: `Venda Ref. Agendamento #${agendamentoInicial.id.slice(0, 8)}`,
-      })
 
       toast({
         variant: "success",
