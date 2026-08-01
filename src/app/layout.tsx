@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Oswald, Inter } from "next/font/google";
 import "./globals.css";
+import { Analytics } from "@vercel/analytics/next";
 
 const oswald = Oswald({
   subsets: ["latin"],
@@ -31,6 +32,7 @@ export default function RootLayout({
     <html lang="pt-BR" className={`${oswald.variable} ${inter.variable}`}>
       <body className="font-inter antialiased bg-canvas text-text-primary">
         {children}
+        <Analytics />
       </body>
     </html>
   );
