@@ -20,10 +20,10 @@ export function PageHeader({
   className = "",
 }: PageHeaderProps) {
   return (
-    <div className={`flex items-start justify-between mb-8 ${className}`}>
+    <div className={`flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-6 md:mb-8 ${className}`}>
       <div className="flex flex-col gap-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h1 className="font-oswald text-3xl font-semibold text-text-primary tracking-wide uppercase">
+          <h1 className="font-oswald text-2xl sm:text-3xl font-semibold text-text-primary tracking-wide uppercase">
             {title}
           </h1>
           {helpTooltip && (
@@ -45,7 +45,7 @@ export function PageHeader({
         )}
       </div>
 
-      {actions && <div className="flex items-center gap-3 shrink-0">{actions}</div>}
+      {actions && <div className="flex items-center gap-3 shrink-0 flex-wrap">{actions}</div>}
     </div>
   );
 }

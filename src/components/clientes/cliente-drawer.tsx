@@ -375,7 +375,7 @@ export function ClienteDrawer({ open, onClose, clienteInicial, onSalvo }: Client
             {...register("nome")}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="WhatsApp"
               placeholder="(00) 00000-0000"
@@ -399,7 +399,7 @@ export function ClienteDrawer({ open, onClose, clienteInicial, onSalvo }: Client
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="E-mail"
               placeholder="exemplo@email.com"
@@ -414,7 +414,7 @@ export function ClienteDrawer({ open, onClose, clienteInicial, onSalvo }: Client
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
               label="Origem"
               value={watch("origem") || "sistema"}
@@ -429,7 +429,7 @@ export function ClienteDrawer({ open, onClose, clienteInicial, onSalvo }: Client
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Estado (UF)"
               placeholder="Ex: SP"
@@ -485,7 +485,7 @@ export function ClienteDrawer({ open, onClose, clienteInicial, onSalvo }: Client
                   <Trash2 size={14} />
                 </button>
 
-                <div className="grid grid-cols-2 gap-3 pr-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-6">
                   <Select
                     label="Tipo"
                     value={tipo}
@@ -506,7 +506,7 @@ export function ClienteDrawer({ open, onClose, clienteInicial, onSalvo }: Client
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   <div className="col-span-1">
                     <Input
                       label="Modelo"
@@ -570,7 +570,7 @@ export function ClienteDrawer({ open, onClose, clienteInicial, onSalvo }: Client
                 <Trash2 size={14} />
               </button>
 
-              <div className="grid grid-cols-2 gap-3 pr-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pr-6">
                 <Input
                   label="Descrição *"
                   placeholder="Ex: Sofá retrátil 3 lugares"

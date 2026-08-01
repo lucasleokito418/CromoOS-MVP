@@ -388,7 +388,7 @@ export function OrcamentoDrawer({ open, onClose, orcamentoInicial, onSalvo }: Or
             placeholder="Selecione um cliente..."
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input
               label="Data *"
               type="date"
@@ -409,7 +409,7 @@ export function OrcamentoDrawer({ open, onClose, orcamentoInicial, onSalvo }: Or
             {...register("observacoes")}
           />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Select
               label="Tipo de Desconto"
               value={descontoTipo}
@@ -525,7 +525,7 @@ export function OrcamentoDrawer({ open, onClose, orcamentoInicial, onSalvo }: Or
           {existingPhotos.length > 0 && (
             <div className="space-y-2">
               <p className="text-[10px] uppercase font-semibold text-text-secondary">Fotos Salvas</p>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {existingPhotos.map((photo) => (
                   <div key={photo.id} className="relative aspect-square border border-border rounded overflow-hidden group">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -547,7 +547,7 @@ export function OrcamentoDrawer({ open, onClose, orcamentoInicial, onSalvo }: Or
           {tempFiles.length > 0 && (
             <div className="space-y-2">
               <p className="text-[10px] uppercase font-semibold text-text-secondary">Novas Fotos (Aguardando Salvar)</p>
-              <div className="grid grid-cols-4 gap-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {tempFiles.map((file, idx) => {
                   const url = URL.createObjectURL(file)
                   return (

@@ -390,7 +390,7 @@ export function VendaDrawer({ open, onClose, vendaInicial, agendamentoId, onSalv
             onChange={v => setValue("funcionario_id", v)}
             options={[{ value: "", label: "Sem atribuição" }, ...funcionarios.map(f => ({ value: f.id, label: f.nome }))]}
           />
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <Select
               label="Status"
               value={statusAtual}

@@ -194,7 +194,7 @@ function VendasContent() {
   ]
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       <PageHeader
         title="Vendas"
         subtitle="Registre e acompanhe ordens de serviço e pagamentos"

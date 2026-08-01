@@ -107,14 +107,14 @@ export function ResumoCliente({ contas, movimentacoes, mesDias, mesNome, hojeStr
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-8">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-8">
       <PageHeader
         title="Resumo Financeiro"
         subtitle={`Visão geral do caixa e das contas no mês de ${mesNome}`}
       />
 
       {/* Faixa horizontal única de métricas com divisores finos */}
-      <div className="grid grid-cols-2 md:grid-cols-5 bg-surface border border-border rounded shadow-sm overflow-hidden divide-y md:divide-y-0 md:divide-x divide-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 bg-surface border border-border rounded shadow-sm overflow-hidden divide-y sm:divide-y-0 sm:divide-x md:divide-x divide-border">
         {/* Saldo Total */}
         <div className="p-5 flex flex-col justify-center min-w-0">
           <span className="text-[10px] text-text-secondary uppercase tracking-wider font-medium">Saldo em Contas</span>

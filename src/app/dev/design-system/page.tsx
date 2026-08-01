@@ -162,7 +162,7 @@ function ShowcaseInner() {
 
           {/* ── Inputs ── */}
           <Section title="Input / Textarea">
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Input label="Nome do cliente" placeholder="Ex: Maria Silva" hint="Nome completo" />
               <Input label="E-mail" placeholder="email@exemplo.com" type="email" />
               <Input label="Com erro" placeholder="Digite algo" error="Campo obrigatório" />
@@ -175,7 +175,7 @@ function ShowcaseInner() {
 
           {/* ── Select ── */}
           <Section title="Select (custom)">
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Select
                 label="Status"
                 value={selectVal}
@@ -264,7 +264,7 @@ function ShowcaseInner() {
 
           {/* ── Card ── */}
           <Section title="Card">
-            <div className="grid grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <Card>
                 <p className="text-sm text-text-secondary">Card simples sem header/footer.</p>
               </Card>

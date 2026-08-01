@@ -360,7 +360,7 @@ export function MovimentacoesCliente({
       />
 
       {/* Filtros */}
-      <div className="bg-surface border border-border rounded-lg p-4 grid grid-cols-2 md:grid-cols-5 gap-3 items-end">
+      <div className="bg-surface border border-border rounded-lg p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 items-end">
         <Select label="Conta" value={filtroConta} onChange={setFiltroConta} options={[{ value: "", label: "Todas as contas" }, ...contas.map(c => ({ value: c.id, label: c.nome }))]} />
         <Select label="Categoria" value={filtroCategoria} onChange={setFiltroCategoria} options={[{ value: "", label: "Todas as categorias" }, ...categoriasFin.map(c => ({ value: c.id, label: c.nome }))]} />
         <Select label="Status" value={filtroStatus} onChange={setFiltroStatus} options={[{ value: "", label: "Todos os status" }, { value: "pago", label: "Pago" }, { value: "pendente", label: "Pendente" }]} />
@@ -386,7 +386,7 @@ export function MovimentacoesCliente({
           
           <Input label="Descrição" {...register("descricao")} placeholder="Ex: Aluguel da sala" error={errors.descricao?.message} />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="Valor" type="number" step="0.01" {...register("valor", { valueAsNumber: true })} error={errors.valor?.message} />
             <Input label="Data" type="date" {...register("data")} error={errors.data?.message} />
           </div>

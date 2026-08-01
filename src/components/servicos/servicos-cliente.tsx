@@ -279,7 +279,7 @@ export function ServicosCliente({ initialServicos }: ServicosClienteProps) {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <Input label="Nome do Serviço" {...register("nome")} placeholder="Ex: Higienização interna completa" error={errors.nome?.message} />
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Input label="Preço (R$)" type="number" step="0.01" {...register("preco", { valueAsNumber: true })} error={errors.preco?.message} />
             <Input label="Comissão (%)" type="number" step="0.01" {...register("comissao_percentual", { valueAsNumber: true })} error={errors.comissao_percentual?.message} />
           </div>

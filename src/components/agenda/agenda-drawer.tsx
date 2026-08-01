@@ -589,7 +589,7 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
 
             {/* Ativo selection (Vehicle / Estofado) */}
             {selectedClienteId && (
-              <div className="grid grid-cols-3 gap-3 items-end bg-surface/30 p-3 border border-border rounded">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end bg-surface/30 p-3 border border-border rounded">
                 <div className="col-span-1">
                   <Select
                     label="Tipo de Ativo"
@@ -604,7 +604,7 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
                     ]}
                   />
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-1 sm:col-span-2">
                   <Select
                     label="Ativo do Cliente *"
                     value={watch("ativo_id")}
@@ -625,7 +625,7 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
               placeholder="Selecione o funcionário..."
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Input
                 label="Início *"
                 type="datetime-local"
@@ -652,7 +652,7 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
               {...register("descricao")}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <Select
                 label="Status"
                 value={watch("status")}
@@ -663,7 +663,7 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
                   { value: "cancelado", label: "Cancelado" },
                 ]}
               />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Select
                   label="Tipo Desc."
                   value={descontoTipo}

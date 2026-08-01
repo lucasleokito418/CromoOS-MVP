@@ -367,7 +367,7 @@ export function ContasCliente({ initialContas, movimentacoes }: ContasClientePro
           {/* Métodos de Recebimento */}
           <div className="space-y-2 border-t border-border pt-4">
             <label className="text-xs font-semibold text-text-secondary uppercase tracking-wide">Métodos de Recebimento Aceitos</label>
-            <div className="grid grid-cols-2 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {METODOS_DISPONIVEIS.map((m) => (
                 <div key={m.id} className="flex items-center gap-2">
                   <input type="checkbox" id={`chk-${m.id}`} checked={metodosRecebimento.includes(m.id)} onChange={() => toggleMetodo(m.id)} className="rounded border-border text-accent bg-surface-hover focus:ring-accent" />
@@ -378,7 +378,7 @@ export function ContasCliente({ initialContas, movimentacoes }: ContasClientePro
           </div>
 
           {/* Taxas de Débito/Pix se aceitar */}
-          <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-border pt-4">
             {metodosRecebimento.includes("debito") && (
               <Input label="Taxa Débito (%)" type="number" step="0.01" {...register("taxa_debito", { valueAsNumber: true })} error={errors.taxa_debito?.message} />
             )}
@@ -401,7 +401,7 @@ export function ContasCliente({ initialContas, movimentacoes }: ContasClientePro
               </div>
 
               {formModoCredito === "taxa_unica" ? (
-                <div className="w-1/2">
+                <div className="w-full sm:w-1/2">
                   <Input
                     label="Taxa de Crédito Geral (%)"
                     type="number"
@@ -414,7 +414,7 @@ export function ContasCliente({ initialContas, movimentacoes }: ContasClientePro
                   />
                 </div>
               ) : (
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                   {Array.from({ length: 12 }).map((_, idx) => {
                     const parc = String(idx + 1)
                     return (

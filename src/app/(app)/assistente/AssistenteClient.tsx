@@ -153,30 +153,30 @@ export function AssistenteClient({ initialBriefing, userDisplayName }: Assistent
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-1px)] bg-canvas">
+    <div className="flex flex-col h-[calc(100dvh-56px)] md:h-screen bg-canvas">
       {/* Header com Briefing Fixo */}
-      <div className="p-4 border-b border-border/50 bg-canvas shrink-0">
+      <div className="p-3 md:p-4 border-b border-border/50 bg-canvas shrink-0">
         <CardBriefing briefing={initialBriefing} />
       </div>
 
       {/* Histórico de Mensagens */}
-      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-6 flex flex-col">
+      <div className="flex-1 overflow-y-auto px-4 md:px-8 py-4 md:py-6 space-y-6 flex flex-col">
         {carregandoHistorico ? (
           <div className="flex-1 flex flex-col items-center justify-center text-text-secondary gap-2">
             <Loader2 className="animate-spin text-text-primary" size={24} />
             <span className="text-xs">Carregando conversa...</span>
           </div>
         ) : mensagens.length === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center text-center p-8 max-w-md mx-auto">
+          <div className="flex-1 flex flex-col items-center justify-center text-center p-4 md:p-8 max-w-md mx-auto">
             <div className="flex flex-col items-center gap-4">
               <img
                 src="/icon-owl.png"
                 alt=""
-                className="w-32 h-32 object-contain select-none"
+                className="w-24 h-24 md:w-32 md:h-32 object-contain select-none"
                 style={{ filter: 'grayscale(100%)', opacity: 0.15 }}
               />
               <div className="space-y-3">
-                <h2 className="text-3xl font-oswald font-semibold text-text-primary">Como posso te ajudar hoje?</h2>
+                <h2 className="text-2xl md:text-3xl font-oswald font-semibold text-text-primary">Como posso te ajudar hoje?</h2>
                 <p className="text-xs text-text-secondary">
                   Você pode perguntar sobre agendamentos de hoje, resumo financeiro do mês, dados de algum cliente, orçamentos pendentes e mais.
                 </p>
@@ -191,7 +191,7 @@ export function AssistenteClient({ initialBriefing, userDisplayName }: Assistent
                 <div
                   key={idx}
                   className={[
-                    'flex gap-3 max-w-[85%]',
+                    'flex gap-3 max-w-[90%] md:max-w-[85%]',
                     isUser ? 'self-end flex-row-reverse' : 'self-start',
                   ].join(' ')}
                 >
@@ -203,7 +203,7 @@ export function AssistenteClient({ initialBriefing, userDisplayName }: Assistent
                   />
                   <div
                     className={[
-                      'rounded p-3.5 text-sm leading-relaxed border',
+                      'rounded p-3 md:p-3.5 text-sm leading-relaxed border',
                       isUser
                         ? 'bg-surface border-border/80 text-text-primary rounded-tr-none'
                         : 'bg-surface/30 border-border/30 text-text-primary rounded-tl-none',
@@ -219,7 +219,7 @@ export function AssistenteClient({ initialBriefing, userDisplayName }: Assistent
             {enviando && (
               <div className="flex gap-3 max-w-[85%] self-start items-center">
                 <Avatar name="IA" size="sm" className="bg-zinc-800 text-text-primary border border-border/50" />
-                <div className="rounded-r rounded-b bg-surface/30 border border-border/30 p-3.5 text-sm flex items-center gap-2 text-text-secondary">
+                <div className="rounded-r rounded-b bg-surface/30 border border-border/30 p-3 text-sm flex items-center gap-2 text-text-secondary">
                   <Loader2 className="animate-spin text-text-primary" size={14} />
                   <span>Kaboré OS IA está analisando os dados...</span>
                 </div>
@@ -230,7 +230,7 @@ export function AssistenteClient({ initialBriefing, userDisplayName }: Assistent
             {transcrevendo && (
               <div className="flex gap-3 max-w-[85%] self-end flex-row-reverse items-center">
                 <Avatar name={userDisplayName} size="sm" className="bg-accent text-accent-on" />
-                <div className="rounded-l rounded-b bg-surface border border-border p-3.5 text-sm flex items-center gap-2 text-text-secondary">
+                <div className="rounded-l rounded-b bg-surface border border-border p-3 text-sm flex items-center gap-2 text-text-secondary">
                   <Loader2 className="animate-spin text-text-primary" size={14} />
                   <span>Transcrevendo áudio...</span>
                 </div>
@@ -243,7 +243,7 @@ export function AssistenteClient({ initialBriefing, userDisplayName }: Assistent
       </div>
 
       {/* Caixa de Entrada de Texto / Áudio */}
-      <div className="p-4 bg-canvas border-t border-border/50 shrink-0">
+      <div className="p-3 md:p-4 bg-canvas border-t border-border/50 shrink-0 sticky bottom-0 z-10 pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
         <form onSubmit={handleEnviar} className="max-w-3xl mx-auto flex items-end gap-2 relative">
           <div className="flex-1 relative flex items-center bg-surface border border-border rounded focus-within:border-text-secondary/50 transition-colors">
             <textarea
@@ -255,22 +255,22 @@ export function AssistenteClient({ initialBriefing, userDisplayName }: Assistent
                   handleEnviar()
                 }
               }}
-              placeholder={gravando ? 'Gravando áudio...' : 'Pergunte algo para o assistente...'}
+              placeholder={gravando ? 'Gravando áudio...' : 'Pergunte algo ao assistente...'}
               disabled={enviando || transcrevendo || gravando}
               rows={1}
               className={[
-                'w-full bg-transparent border-none text-sm p-3.5 pr-12 outline-none resize-none text-text-primary',
+                'w-full bg-transparent border-none text-sm p-3 pr-10 outline-none resize-none text-text-primary',
                 'disabled:opacity-50 disabled:cursor-not-allowed max-h-[120px]',
               ].join(' ')}
             />
 
             {/* Botão de Gravação de Áudio */}
-            <div className="absolute right-2 bottom-2">
+            <div className="absolute right-1.5 bottom-1.5">
               {gravando ? (
                 <button
                   type="button"
                   onClick={pararGravacao}
-                  className="p-2 rounded bg-danger hover:bg-danger/80 text-white animate-pulse"
+                  className="p-1.5 rounded bg-danger hover:bg-danger/80 text-white animate-pulse"
                   title="Parar gravação"
                 >
                   <MicOff size={16} />
@@ -280,7 +280,7 @@ export function AssistenteClient({ initialBriefing, userDisplayName }: Assistent
                   type="button"
                   onClick={iniciarGravacao}
                   disabled={enviando || transcrevendo}
-                  className="p-2 rounded hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="p-1.5 rounded hover:bg-surface-hover text-text-secondary hover:text-text-primary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Gravar áudio"
                 >
                   <Mic size={16} />
@@ -293,10 +293,10 @@ export function AssistenteClient({ initialBriefing, userDisplayName }: Assistent
             type="submit"
             variant="primary"
             disabled={!texto.trim() || enviando || transcrevendo || gravando}
-            className="h-[48px] px-5 rounded shrink-0 font-semibold"
+            className="h-[44px] md:h-[48px] px-3 md:px-5 rounded shrink-0 font-semibold text-xs md:text-sm"
             iconLeft={<Send size={16} />}
           >
-            Enviar
+            <span className="hidden sm:inline">Enviar</span>
           </Button>
         </form>
       </div>

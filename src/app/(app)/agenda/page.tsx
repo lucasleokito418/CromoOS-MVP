@@ -298,7 +298,7 @@ export default function AgendaPage() {
   ]
 
   return (
-    <div className="p-8 max-w-7xl mx-auto space-y-6">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto space-y-6">
       <PageHeader
         title="Agenda"
         subtitle="Gerencie agendamentos, serviços solicitados e faturamento"
@@ -335,9 +335,10 @@ export default function AgendaPage() {
       </div>
 
       {activeTab === "calendario" ? (
-        <div className="bg-surface border border-border rounded-lg overflow-hidden">
-          {/* Weekday headers */}
-          <div className="grid grid-cols-7 border-b border-border bg-sidebar">
+        <div className="bg-surface border border-border rounded-lg overflow-x-auto">
+          <div className="min-w-[650px]">
+            {/* Weekday headers */}
+            <div className="grid grid-cols-7 border-b border-border bg-sidebar">
             {WEEKDAYS.map((w) => (
               <div key={w} className="py-2 text-center text-xs font-semibold text-text-secondary">
                 {w}
@@ -397,6 +398,7 @@ export default function AgendaPage() {
               )
             })}
           </div>
+        </div>
         </div>
       ) : (
         <div className="bg-surface border border-border rounded-lg overflow-hidden">

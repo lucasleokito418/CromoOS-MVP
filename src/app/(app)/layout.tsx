@@ -20,12 +20,8 @@ import {
   Sparkles
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
-import { Sidebar } from '@/components/layout/sidebar'
 import type { SidebarSection } from '@/components/layout/sidebar'
-import { Avatar } from '@/components/ui/avatar'
-import { EmpresaProvider } from '@/lib/contexts/empresa-context'
-import { ToastProvider } from '@/components/ui/toast'
-import { KaboreLogo } from '@/components/layout/logo'
+import { AppShell } from '@/components/layout/app-shell'
 
 export default async function AppLayout({
   children,
@@ -181,33 +177,13 @@ export default async function AppLayout({
   const userDisplayName = perfil?.nome || session.user.email?.split('@')[0] || 'Usuário'
 
   return (
-    <div className="flex h-screen overflow-hidden bg-canvas">
-      <Sidebar
-        sections={navSections}
-        activeKey="painel"
-        logoSlot={<KaboreLogo variant="image" />}
-        bottomSlot={
-          <div className="flex items-center gap-2.5 px-1 min-w-0">
-            <Avatar name={userDisplayName} size="sm" />
-            <div className="flex flex-col min-w-0 sidebar-user-info">
-              <span className="text-xs font-medium text-text-primary truncate">
-                {userDisplayName}
-              </span>
-              <span className="text-[10px] text-text-secondary truncate">
-                {session.user.email}
-              </span>
-            </div>
-          </div>
-        }
-      />
-
-      <main className="flex-1 overflow-y-auto">
-        <ToastProvider>
-          <EmpresaProvider empresaId={perfil?.empresa_id || null}>
-            {children}
-          </EmpresaProvider>
-        </ToastProvider>
-      </main>
-    </div>
+    <AppShell
+      userDisplayName={userDisplayName}
+      userEmail={session.user.email || ''}
+      empresaId={perfil?.empresa_id || null}
+      navSections={navSections}
+    >
+      {children}
+    </AppShell>
   )
 }

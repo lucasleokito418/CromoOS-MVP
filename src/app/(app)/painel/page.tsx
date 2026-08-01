@@ -158,7 +158,7 @@ export default async function PainelPage() {
   const clientes = (clientesRaw || []) as ClientRow[]
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
       {/* Header */}
       <PageHeader
         title="Painel"
@@ -167,7 +167,7 @@ export default async function PainelPage() {
       />
 
       {/* Faixa de métricas horizontal única */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 bg-surface border border-border rounded shadow-sm mb-8 overflow-hidden divide-y lg:divide-y-0 lg:divide-x divide-border">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 bg-surface border border-border rounded shadow-sm mb-8 overflow-hidden divide-y sm:divide-y-0 sm:divide-x lg:divide-x divide-border">
         {/* Card 1 */}
         <div className="p-5 flex items-center gap-4">
           <div className="w-10 h-10 rounded bg-accent/10 flex items-center justify-center shrink-0">
