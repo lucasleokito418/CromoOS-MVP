@@ -4,7 +4,7 @@ import React, { useEffect, useState, useTransition } from "react"
 import { useForm, useFieldArray } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Plus, Trash2, Calendar, DollarSign, Loader2 } from "lucide-react"
+import { Plus, Trash2, Calendar, DollarSign, Loader2, UserPlus } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
 import { Drawer } from "@/components/ui/drawer"
@@ -14,6 +14,7 @@ import { Select } from "@/components/ui/select"
 import { useToast } from "@/components/ui/toast"
 import { useEmpresa } from "@/lib/contexts/empresa-context"
 import { useRouter } from "next/navigation"
+import { QuickClientModal, type ClienteCriado } from "@/components/clientes/quick-client-modal"
 
 interface AgendaDrawerProps {
   open: boolean
@@ -73,7 +74,10 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
   const [funcionarios, setFuncionarios] = useState<any[]>([])
   const [servicosDisponiveis, setServicosDisponiveis] = useState<any[]>([])
   const [ativosCliente, setAtivosCliente] = useState<any[]>([])
-  
+
+  // Cadastro rápido de cliente
+  const [quickClientOpen, setQuickClientOpen] = useState(false)
+
   // Faturamento fields
   const [metodoPagamento, setMetodoPagamento] = useState("pix")
   const { empresaId } = useEmpresa()
@@ -343,6 +347,23 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
     })
   }
 
+  // Callback de erro de validação do Zod (campos obrigatórios não preenchidos)
+  const onValidationError = () => {
+    toast({
+      variant: "warning",
+      title: "Campos obrigatórios pendentes",
+      description: "Preencha cliente, ativo, profissional, datas e ao menos um serviço.",
+    })
+  }
+
+  // Callback: novo cliente cadastrado rapidamente
+  const handleClienteCriado = (cliente: ClienteCriado) => {
+    setClientes(prev => [...prev, { id: cliente.id, nome: cliente.nome }].sort((a, b) => a.nome.localeCompare(b.nome)))
+    setValue("cliente_id", cliente.id)
+    setValue("ativo_id", "")
+    setQuickClientOpen(false)
+  }
+
   // Handle Quick Billing (Faturar/Registrar Pagamento)
   const handleFaturar = async () => {
     if (!agendamentoInicial?.id || !empresaId) return
@@ -493,7 +514,12 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
               Cancelar
             </Button>
             {!showFaturar && (
-              <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={isPending}>
+              <Button
+                variant="primary"
+                onClick={handleSubmit(onSubmit, onValidationError)}
+                loading={isPending}
+                disabled={isPending}
+              >
                 Salvar
               </Button>
             )}
@@ -501,6 +527,12 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
         </div>
       }
     >
+      {/* Modal de cadastro rápido de cliente */}
+      <QuickClientModal
+        open={quickClientOpen}
+        onClose={() => setQuickClientOpen(false)}
+        onClienteCriado={handleClienteCriado}
+      />
       {showFaturar ? (
         <div className="space-y-6 py-4">
           <div className="p-4 bg-surface border border-success/20 rounded-lg space-y-3">
@@ -562,17 +594,30 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
           <div className="space-y-4">
             {/* Clientes */}
-            <Select
-              label="Cliente *"
-              value={selectedClienteId}
-              onChange={(val) => {
-                setValue("cliente_id", val)
-                setValue("ativo_id", "")
-              }}
-              options={clientes.map(c => ({ value: c.id, label: c.nome }))}
-              searchable
-              placeholder="Selecione um cliente..."
-            />
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-text-primary leading-none">Cliente *</span>
+                <button
+                  type="button"
+                  onClick={() => setQuickClientOpen(true)}
+                  className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium transition-colors"
+                >
+                  <UserPlus size={12} />
+                  Novo Cliente
+                </button>
+              </div>
+              <Select
+                value={selectedClienteId}
+                onChange={(val) => {
+                  setValue("cliente_id", val)
+                  setValue("ativo_id", "")
+                }}
+                options={clientes.map(c => ({ value: c.id, label: c.nome }))}
+                searchable
+                placeholder="Selecione um cliente..."
+                error={errors.cliente_id?.message}
+              />
+            </div>
 
             {/* Ativo selection (Vehicle / Estofado) */}
             {selectedClienteId && (
@@ -610,6 +655,7 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
               onChange={(val) => setValue("funcionario_id", val)}
               options={funcionarios.map(f => ({ value: f.id, label: f.nome }))}
               placeholder="Selecione o funcionário..."
+              error={errors.funcionario_id?.message}
             />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -736,7 +782,9 @@ export function AgendaDrawer({ open, onClose, agendamentoInicial, onSalvo }: Age
             )}
 
             {errors.servicos?.message && (
-              <p className="text-xs text-danger">{errors.servicos.message}</p>
+              <p className="text-xs text-danger bg-danger/10 border border-danger/20 rounded px-3 py-2">
+                {errors.servicos.message}
+              </p>
             )}
 
             {/* Total summary */}

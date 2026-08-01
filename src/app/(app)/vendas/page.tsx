@@ -60,6 +60,7 @@ function VendasContent() {
       router.replace("/vendas")
     }
     carregarVendas()
+    router.refresh()
   }
 
   const carregarVendas = useCallback(async () => {

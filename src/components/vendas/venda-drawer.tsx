@@ -4,7 +4,7 @@ import React, { useEffect, useState, useTransition } from "react"
 import { useFieldArray, useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
-import { Plus, Trash2, FileText, Download } from "lucide-react"
+import { Plus, Trash2, FileText, UserPlus } from "lucide-react"
 import { pdf } from "@react-pdf/renderer"
 
 import { createClient } from "@/lib/supabase/client"
@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/components/ui/toast"
 import { PdfComprovante } from "@/components/vendas/pdf-comprovante"
 import { useEmpresa } from "@/lib/contexts/empresa-context"
+import { QuickClientModal, type ClienteCriado } from "@/components/clientes/quick-client-modal"
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -86,6 +87,9 @@ export function VendaDrawer({ open, onClose, vendaInicial, agendamentoId, onSalv
   const [agendamentoPreload, setAgendamentoPreload] = useState<any | null>(null)
   const { empresaId } = useEmpresa()
 
+  // ── Cadastro rápido de cliente ──────────────────────────────────────────────
+  const [quickClientOpen, setQuickClientOpen] = useState(false)
+
   const {
     register, control, handleSubmit, setValue, watch, reset,
     formState: { errors },
@@ -110,12 +114,13 @@ export function VendaDrawer({ open, onClose, vendaInicial, agendamentoId, onSalv
   const descontoTipo = watch("desconto_tipo")
   const descontoValor = watch("desconto_valor") || 0
   const statusAtual = watch("status")
+  const clienteIdAtual = watch("cliente_id")
 
   const totalBruto = servicosSelecionados.reduce((a, s) => a + (s.preco_aplicado || 0), 0)
   const totalLiquido = Math.max(0, descontoTipo === "percentual" ? totalBruto * (1 - descontoValor / 100) : totalBruto - descontoValor)
   const totalPago = pagamentosSelecionados.reduce((a, p) => a + (p.valor || 0), 0)
 
-  // Load base data
+  // ── Load base data ──────────────────────────────────────────────────────────
   useEffect(() => {
     if (!open) return
     async function load() {
@@ -123,7 +128,6 @@ export function VendaDrawer({ open, onClose, vendaInicial, agendamentoId, onSalv
         const { data: emp } = await supabase.from("empresas").select("id, nome, cnpj, telefone").eq("id", empresaId).single()
         setEmpresa(emp)
 
-        // Load or create accounts
         let { data: listContas } = await supabase.from("contas_financeiras").select("id, nome").eq("empresa_id", empresaId)
         if (!listContas || listContas.length === 0) {
           const { data: novaConta, error: errConta } = await supabase
@@ -166,7 +170,7 @@ export function VendaDrawer({ open, onClose, vendaInicial, agendamentoId, onSalv
     load()
   }, [open, supabase, empresaId, agendamentoId])
 
-  // Populate form when editing or preloading from agenda
+  // ── Populate form when editing or preloading from agenda ───────────────────
   useEffect(() => {
     if (!open) return
     if (vendaInicial) {
@@ -213,8 +217,14 @@ export function VendaDrawer({ open, onClose, vendaInicial, agendamentoId, onSalv
     }
   }, [open, vendaInicial, agendamentoPreload, reset])
 
-
-
+  // ── Callback: novo cliente cadastrado rapidamente ──────────────────────────
+  const handleClienteCriado = (cliente: ClienteCriado) => {
+    // Adiciona à lista local para exibir imediatamente no Select
+    setClientes(prev => [...prev, { id: cliente.id, nome: cliente.nome }].sort((a, b) => a.nome.localeCompare(b.nome)))
+    // Auto-seleciona o cliente recém-criado
+    setValue("cliente_id", cliente.id)
+    setQuickClientOpen(false)
+  }
 
   // ── Next sequential number ──────────────────────────────────────────────────
   async function getProxNumero(empId: string): Promise<number> {
@@ -302,11 +312,20 @@ export function VendaDrawer({ open, onClose, vendaInicial, agendamentoId, onSalv
           if (error) throw error
         }
 
-        toast({ variant: "success", title: vendaInicial ? "Venda atualizada" : "Venda registrada" })
+        toast({ variant: "success", title: vendaInicial ? "Venda atualizada" : "Venda registrada com sucesso!" })
         onSalvo()
       } catch (err: any) {
         toast({ variant: "error", title: "Erro ao salvar", description: err?.message || "Erro desconhecido" })
       }
+    })
+  }
+
+  // ── Callback de erro de validação (chamado pelo handleSubmit quando Zod reprova) ─
+  const onValidationError = () => {
+    toast({
+      variant: "warning",
+      title: "Campos obrigatórios pendentes",
+      description: "Preencha o cliente e adicione ao menos um serviço antes de salvar.",
     })
   }
 
@@ -340,198 +359,232 @@ export function VendaDrawer({ open, onClose, vendaInicial, agendamentoId, onSalv
   }
 
   return (
-    <Drawer
-      open={open}
-      onClose={onClose}
-      title={vendaInicial ? `Venda #${vendaInicial.numero_sequencial}` : "Nova Venda"}
-      subtitle="Registre serviços, pagamentos e gere comprovantes"
-      maxWidth={540}
-      footer={
-        <div className="flex gap-2 w-full justify-between items-center">
-          {vendaInicial && (
-            <div className="flex gap-1">
-              {(["A4", "notinha", "notinha_mini"] as const).map(fmt => (
-                <Button
-                  key={fmt}
+    <>
+      {/* Modal de cadastro rápido de cliente */}
+      <QuickClientModal
+        open={quickClientOpen}
+        onClose={() => setQuickClientOpen(false)}
+        onClienteCriado={handleClienteCriado}
+      />
+
+      <Drawer
+        open={open}
+        onClose={onClose}
+        title={vendaInicial ? `Venda #${vendaInicial.numero_sequencial}` : "Nova Venda"}
+        subtitle="Registre serviços, pagamentos e gere comprovantes"
+        maxWidth={540}
+        footer={
+          <div className="flex gap-2 w-full justify-between items-center">
+            {vendaInicial && (
+              <div className="flex gap-1">
+                {(["A4", "notinha", "notinha_mini"] as const).map(fmt => (
+                  <Button
+                    key={fmt}
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    disabled={isGeneratingPdf}
+                    onClick={() => handleGerarPdf(fmt)}
+                    className="text-xs"
+                    iconLeft={<FileText size={12} />}
+                  >
+                    {fmt === "A4" ? "A4" : fmt === "notinha" ? "Recibo" : "Mini"}
+                  </Button>
+                ))}
+              </div>
+            )}
+            <div className="flex gap-2 ml-auto">
+              <Button variant="secondary" onClick={onClose} disabled={isPending}>Cancelar</Button>
+              <Button
+                variant="primary"
+                onClick={handleSubmit(onSubmit, onValidationError)}
+                loading={isPending}
+                disabled={isPending}
+              >
+                Salvar
+              </Button>
+            </div>
+          </div>
+        }
+      >
+        <form className="space-y-5">
+          {/* Cliente + Funcionário */}
+          <div className="space-y-4">
+            {/* Seletor de cliente com botão de cadastro rápido */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-text-primary leading-none">Cliente *</span>
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  disabled={isGeneratingPdf}
-                  onClick={() => handleGerarPdf(fmt)}
-                  className="text-xs"
-                  iconLeft={<FileText size={12} />}
+                  onClick={() => setQuickClientOpen(true)}
+                  className="inline-flex items-center gap-1 text-xs text-accent hover:text-accent-hover font-medium transition-colors"
                 >
-                  {fmt === "A4" ? "A4" : fmt === "notinha" ? "Recibo" : "Mini"}
-                </Button>
-              ))}
-            </div>
-          )}
-          <div className="flex gap-2">
-            <Button variant="secondary" onClick={onClose} disabled={isPending}>Cancelar</Button>
-            <Button variant="primary" onClick={handleSubmit(onSubmit)} loading={isPending}>Salvar</Button>
-          </div>
-        </div>
-      }
-    >
-      <form className="space-y-5">
-        {/* Cliente + Funcionário */}
-        <div className="space-y-4">
-          <Select
-            label="Cliente *"
-            value={watch("cliente_id")}
-            onChange={v => setValue("cliente_id", v)}
-            options={clientes.map(c => ({ value: c.id, label: c.nome }))}
-            searchable
-            placeholder="Selecione um cliente..."
-          />
-          <Select
-            label="Profissional"
-            value={watch("funcionario_id") || ""}
-            onChange={v => setValue("funcionario_id", v)}
-            options={[{ value: "", label: "Sem atribuição" }, ...funcionarios.map(f => ({ value: f.id, label: f.nome }))]}
-          />
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <Select
-              label="Status"
-              value={statusAtual}
-              onChange={v => setValue("status", v as any)}
-              options={[
-                { value: "aberta", label: "Aberta" },
-                { value: "concluida", label: "Concluída" },
-                { value: "cancelada", label: "Cancelada" },
-              ]}
-            />
-            <Select
-              label="Desconto"
-              value={descontoTipo}
-              onChange={v => setValue("desconto_tipo", v as any)}
-              options={[{ value: "valor", label: "R$" }, { value: "percentual", label: "%" }]}
-            />
-            <Input
-              label="Valor"
-              type="number"
-              step="any"
-              {...register("desconto_valor", { valueAsNumber: true })}
-            />
-          </div>
-        </div>
-
-        <hr className="border-border" />
-
-        {/* Serviços */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Serviços</span>
-            <Button
-              type="button" variant="secondary" size="sm"
-              iconLeft={<Plus size={13} />}
-              onClick={() => servicosDisponiveis[0] && appendServico({ servico_id: servicosDisponiveis[0].id, preco_aplicado: Number(servicosDisponiveis[0].preco) })}
-            >
-              Adicionar
-            </Button>
-          </div>
-
-          {servicoFields.map((f, i) => (
-            <div key={f.id} className="flex gap-2 items-end p-3 bg-surface border border-border rounded relative">
-              <button type="button" onClick={() => removeServico(i)} className="absolute -top-2 -right-2 p-1 bg-surface border border-border text-text-secondary hover:text-danger rounded-full transition-colors">
-                <Trash2 size={11} />
-              </button>
-              <div className="flex-1">
-                <Select
-                  label="Serviço"
-                  value={watch(`servicos.${i}.servico_id`)}
-                  onChange={v => {
-                    setValue(`servicos.${i}.servico_id`, v)
-                    const s = servicosDisponiveis.find(sd => sd.id === v)
-                    if (s) setValue(`servicos.${i}.preco_aplicado`, Number(s.preco))
-                  }}
-                  options={servicosDisponiveis.map(s => ({ value: s.id, label: s.nome }))}
-                />
+                  <UserPlus size={12} />
+                  Novo Cliente
+                </button>
               </div>
-              <div className="w-28">
-                <Input label="Preço" type="number" step="0.01" {...register(`servicos.${i}.preco_aplicado` as const, { valueAsNumber: true })} />
-              </div>
+              <Select
+                value={clienteIdAtual}
+                onChange={v => setValue("cliente_id", v)}
+                options={clientes.map(c => ({ value: c.id, label: c.nome }))}
+                searchable
+                placeholder="Selecione um cliente..."
+                error={errors.cliente_id?.message}
+              />
             </div>
-          ))}
 
-          {servicoFields.length === 0 && (
-            <p className="text-xs text-text-secondary text-center py-3 border border-dashed border-border/50 rounded">Nenhum serviço adicionado.</p>
-          )}
-
-          {servicoFields.length > 0 && (
-            <div className="flex justify-between items-center p-3 bg-surface border border-border rounded text-sm font-semibold">
-              <span className="text-text-secondary">Total:</span>
-              <span className="text-text-primary tabular-nums">
-                {totalLiquido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-              </span>
+            <Select
+              label="Profissional"
+              value={watch("funcionario_id") || ""}
+              onChange={v => setValue("funcionario_id", v)}
+              options={[{ value: "", label: "Sem atribuição" }, ...funcionarios.map(f => ({ value: f.id, label: f.nome }))]}
+            />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <Select
+                label="Status"
+                value={statusAtual}
+                onChange={v => setValue("status", v as any)}
+                options={[
+                  { value: "aberta", label: "Aberta" },
+                  { value: "concluida", label: "Concluída" },
+                  { value: "cancelada", label: "Cancelada" },
+                ]}
+              />
+              <Select
+                label="Desconto"
+                value={descontoTipo}
+                onChange={v => setValue("desconto_tipo", v as any)}
+                options={[{ value: "valor", label: "R$" }, { value: "percentual", label: "%" }]}
+              />
+              <Input
+                label="Valor"
+                type="number"
+                step="any"
+                {...register("desconto_valor", { valueAsNumber: true })}
+              />
             </div>
-          )}
-        </div>
-
-        <hr className="border-border" />
-
-        {/* Pagamentos */}
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Pagamentos</span>
-            <Button
-              type="button" variant="secondary" size="sm"
-              iconLeft={<Plus size={13} />}
-              onClick={() => appendPagamento({ metodo: "pix", parcelas: 1, valor: Math.max(0, totalLiquido - totalPago), conta_id: contas[0]?.id || "" })}
-            >
-              + Pagamento
-            </Button>
           </div>
 
-          {pagamentoFields.map((f, i) => {
-            const metodoAtual = watch(`pagamentos.${i}.metodo`)
-            return (
-              <div key={f.id} className="grid grid-cols-12 gap-2 items-end p-3 bg-surface border border-border rounded relative">
-                <button type="button" onClick={() => removePagamento(i)} className="absolute -top-2 -right-2 p-1 bg-surface border border-border text-text-secondary hover:text-danger rounded-full transition-colors">
+          <hr className="border-border" />
+
+          {/* Serviços */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Serviços</span>
+              <Button
+                type="button" variant="secondary" size="sm"
+                iconLeft={<Plus size={13} />}
+                onClick={() => servicosDisponiveis[0] && appendServico({ servico_id: servicosDisponiveis[0].id, preco_aplicado: Number(servicosDisponiveis[0].preco) })}
+              >
+                Adicionar
+              </Button>
+            </div>
+
+            {servicoFields.map((f, i) => (
+              <div key={f.id} className="flex gap-2 items-end p-3 bg-surface border border-border rounded relative">
+                <button type="button" onClick={() => removeServico(i)} className="absolute -top-2 -right-2 p-1 bg-surface border border-border text-text-secondary hover:text-danger rounded-full transition-colors">
                   <Trash2 size={11} />
                 </button>
-                <div className={metodoAtual === "credito" ? "col-span-4" : "col-span-5"}>
+                <div className="flex-1">
                   <Select
-                    label="Método"
-                    value={metodoAtual}
-                    onChange={v => setValue(`pagamentos.${i}.metodo`, v)}
-                    options={METODOS_PAGAMENTO}
+                    label="Serviço"
+                    value={watch(`servicos.${i}.servico_id`)}
+                    onChange={v => {
+                      setValue(`servicos.${i}.servico_id`, v)
+                      const s = servicosDisponiveis.find(sd => sd.id === v)
+                      if (s) setValue(`servicos.${i}.preco_aplicado`, Number(s.preco))
+                    }}
+                    options={servicosDisponiveis.map(s => ({ value: s.id, label: s.nome }))}
                   />
                 </div>
-                <div className={metodoAtual === "credito" ? "col-span-4" : "col-span-4"}>
-                  <Select
-                    label="Conta"
-                    value={watch(`pagamentos.${i}.conta_id`)}
-                    onChange={v => setValue(`pagamentos.${i}.conta_id`, v)}
-                    options={contas.map(c => ({ value: c.id, label: c.nome }))}
-                  />
-                </div>
-                {metodoAtual === "credito" && (
-                  <div className="col-span-2">
-                    <Input label="Parc." type="number" min={1} max={12} {...register(`pagamentos.${i}.parcelas` as const, { valueAsNumber: true })} />
-                  </div>
-                )}
-                <div className={metodoAtual === "credito" ? "col-span-2" : "col-span-3"}>
-                  <Input label="Valor" type="number" step="0.01" {...register(`pagamentos.${i}.valor` as const, { valueAsNumber: true })} />
+                <div className="w-28">
+                  <Input label="Preço" type="number" step="0.01" {...register(`servicos.${i}.preco_aplicado` as const, { valueAsNumber: true })} />
                 </div>
               </div>
-            )
-          })}
+            ))}
 
-          {pagamentoFields.length === 0 && (
-            <p className="text-xs text-text-secondary text-center py-3 border border-dashed border-border/50 rounded">Nenhum pagamento lançado.</p>
-          )}
+            {servicoFields.length === 0 && (
+              <p className={`text-xs text-center py-3 border border-dashed rounded ${errors.servicos?.message ? "border-danger text-danger" : "border-border/50 text-text-secondary"}`}>
+                {errors.servicos?.message || "Nenhum serviço adicionado."}
+              </p>
+            )}
 
-          {pagamentoFields.length > 0 && (
-            <div className="flex justify-between items-center p-3 bg-surface border border-border rounded text-xs">
-              <span className="text-text-secondary">Pago / Restante:</span>
-              <span className={`font-semibold tabular-nums ${totalLiquido - totalPago > 0 ? "text-warning" : "text-success"}`}>
-                {totalPago.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} / {Math.max(0, totalLiquido - totalPago).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-              </span>
+            {servicoFields.length > 0 && (
+              <div className="flex justify-between items-center p-3 bg-surface border border-border rounded text-sm font-semibold">
+                <span className="text-text-secondary">Total:</span>
+                <span className="text-text-primary tabular-nums">
+                  {totalLiquido.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <hr className="border-border" />
+
+          {/* Pagamentos */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-text-secondary uppercase tracking-wider">Pagamentos</span>
+              <Button
+                type="button" variant="secondary" size="sm"
+                iconLeft={<Plus size={13} />}
+                onClick={() => appendPagamento({ metodo: "pix", parcelas: 1, valor: Math.max(0, totalLiquido - totalPago), conta_id: contas[0]?.id || "" })}
+              >
+                + Pagamento
+              </Button>
             </div>
-          )}
-        </div>
-      </form>
-    </Drawer>
+
+            {pagamentoFields.map((f, i) => {
+              const metodoAtual = watch(`pagamentos.${i}.metodo`)
+              return (
+                <div key={f.id} className="grid grid-cols-12 gap-2 items-end p-3 bg-surface border border-border rounded relative">
+                  <button type="button" onClick={() => removePagamento(i)} className="absolute -top-2 -right-2 p-1 bg-surface border border-border text-text-secondary hover:text-danger rounded-full transition-colors">
+                    <Trash2 size={11} />
+                  </button>
+                  <div className={metodoAtual === "credito" ? "col-span-4" : "col-span-5"}>
+                    <Select
+                      label="Método"
+                      value={metodoAtual}
+                      onChange={v => setValue(`pagamentos.${i}.metodo`, v)}
+                      options={METODOS_PAGAMENTO}
+                    />
+                  </div>
+                  <div className={metodoAtual === "credito" ? "col-span-4" : "col-span-4"}>
+                    <Select
+                      label="Conta"
+                      value={watch(`pagamentos.${i}.conta_id`)}
+                      onChange={v => setValue(`pagamentos.${i}.conta_id`, v)}
+                      options={contas.map(c => ({ value: c.id, label: c.nome }))}
+                      error={errors.pagamentos?.[i]?.conta_id?.message}
+                    />
+                  </div>
+                  {metodoAtual === "credito" && (
+                    <div className="col-span-2">
+                      <Input label="Parc." type="number" min={1} max={12} {...register(`pagamentos.${i}.parcelas` as const, { valueAsNumber: true })} />
+                    </div>
+                  )}
+                  <div className={metodoAtual === "credito" ? "col-span-2" : "col-span-3"}>
+                    <Input label="Valor" type="number" step="0.01" {...register(`pagamentos.${i}.valor` as const, { valueAsNumber: true })} />
+                  </div>
+                </div>
+              )
+            })}
+
+            {pagamentoFields.length === 0 && (
+              <p className="text-xs text-text-secondary text-center py-3 border border-dashed border-border/50 rounded">Nenhum pagamento lançado.</p>
+            )}
+
+            {pagamentoFields.length > 0 && (
+              <div className="flex justify-between items-center p-3 bg-surface border border-border rounded text-xs">
+                <span className="text-text-secondary">Pago / Restante:</span>
+                <span className={`font-semibold tabular-nums ${totalLiquido - totalPago > 0 ? "text-warning" : "text-success"}`}>
+                  {totalPago.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })} / {Math.max(0, totalLiquido - totalPago).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                </span>
+              </div>
+            )}
+          </div>
+        </form>
+      </Drawer>
+    </>
   )
 }

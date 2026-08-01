@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState, useEffect, useMemo, useCallback, useTransition } from "react"
+import React, { useState, useEffect, useMemo, useCallback } from "react"
 import { Plus, ChevronLeft, ChevronRight, Calendar as CalendarIcon, List as ListIcon, Pencil, Trash2, DollarSign } from "lucide-react"
 
 import { createClient } from "@/lib/supabase/client"
@@ -51,7 +51,6 @@ export default function AgendaPage() {
   const supabase = createClient()
   const { toast } = useToast()
   const router = useRouter()
-  const [, startTransition] = useTransition()
 
   // State
   const [activeTab, setActiveTab] = useState("calendario")
@@ -173,17 +172,15 @@ export default function AgendaPage() {
 
   const handleSalvo = () => {
     setDrawerOpen(false)
-    startTransition(() => {
-      carregarAgendamentos()
-    })
+    carregarAgendamentos()
+    router.refresh()
   }
 
   const handleExcluido = () => {
     setModalExcluirOpen(false)
     setAgendamentoExcluindo(null)
-    startTransition(() => {
-      carregarAgendamentos()
-    })
+    carregarAgendamentos()
+    router.refresh()
   }
 
   // Table Columns (Lista)
@@ -308,6 +305,50 @@ export default function AgendaPage() {
           </Button>
         }
       />
+
+      {/* Indicadores dinâmicos — todos calculados a partir dos dados reais do banco */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {[
+          {
+            label: "Total",
+            value: agendamentos.length,
+            color: "text-text-primary",
+            bg: "bg-surface",
+          },
+          {
+            label: "Pendentes",
+            value: agendamentos.filter(a => a.status === "pendente").length,
+            color: "text-warning",
+            bg: "bg-warning/5",
+          },
+          {
+            label: "Confirmados",
+            value: agendamentos.filter(a => a.status === "confirmado").length,
+            color: "text-success",
+            bg: "bg-success/5",
+          },
+          {
+            label: "Cancelados",
+            value: agendamentos.filter(a => a.status === "cancelado").length,
+            color: "text-danger",
+            bg: "bg-danger/5",
+          },
+        ].map(stat => (
+          <div
+            key={stat.label}
+            className={`${stat.bg} border border-border rounded-lg px-4 py-3 flex flex-col gap-0.5`}
+          >
+            <span className="text-xs text-text-secondary">{stat.label}</span>
+            <span className={`text-2xl font-semibold tabular-nums ${stat.color}`}>
+              {loading ? (
+                <span className="inline-block w-8 h-6 bg-surface-hover rounded animate-pulse" />
+              ) : (
+                stat.value
+              )}
+            </span>
+          </div>
+        ))}
+      </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface border border-border p-4 rounded-lg">
         <Tabs
